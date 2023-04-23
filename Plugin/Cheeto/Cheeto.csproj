@@ -4,7 +4,7 @@
   <PropertyGroup>
     <ApplicationBasePath>D:\Steam\steamapps\common\Road to Vostok Demo</ApplicationBasePath>
     <ApplicationManagedPath>$(ApplicationBasePath)\Public_Demo_1_Data\Managed</ApplicationManagedPath>
-    <PluginDestinationPath>$(ApplicationBasePath)\BepInEx\scripts</PluginDestinationPath>
+    <PluginDestinationPath>$(ApplicationBasePath)\BepInEx\plugins</PluginDestinationPath>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -45,11 +45,20 @@
     <Reference Include="BepInEx">
       <HintPath>$(ApplicationBasePath)\BepInEx\core\BepInEx.dll</HintPath>
     </Reference>
+    <Reference Include="ImGui.NET">
+      <HintPath>$(ApplicationManagedPath)\ImGui.NET.dll</HintPath>
+    </Reference>
+    <Reference Include="UImGui">
+      <HintPath>$(ApplicationManagedPath)\UImGui.dll</HintPath>
+    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>$(ApplicationManagedPath)\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>$(ApplicationManagedPath)\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>$(ApplicationManagedPath)\UnityEngine.AssetBundleModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(ApplicationManagedPath)\UnityEngine.CoreModule.dll</HintPath>
@@ -69,6 +78,8 @@
     <Compile Include="Core\Chams\ChamsStandard.cs" />
     <Compile Include="Core\Chams\ChamsURP.cs" />
     <Compile Include="Core\CheetoBehaviour.cs" />
+    <Compile Include="Core\ImguiInstaller.cs" />
+    <Compile Include="Core\RuntimeRendererFeatureInstaller.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

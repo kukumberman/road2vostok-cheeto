@@ -1,38 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Experimental.Rendering.Universal;
 
 namespace Cheeto.Core.Chams
 {
-    public sealed class ScriptableRendererDataWrapper
-    {
-        private readonly ScriptableRendererData _data;
-
-        public ScriptableRendererDataWrapper(ScriptableRendererData data)
-        {
-            _data = data;
-        }
-
-        public void AddFeature(ScriptableRendererFeature feature)
-        {
-            _data.rendererFeatures.Add(feature);
-        }
-
-        public void RemoveFeature(ScriptableRendererFeature feature)
-        {
-            for (int i = _data.rendererFeatures.Count - 1; i >= 0; i--)
-            {
-                if (_data.rendererFeatures[i] == feature)
-                {
-                    _data.rendererFeatures.RemoveAt(i);
-                }
-            }
-        }
-    }
-
     public sealed class ChamsFeature : RenderObjects
     {
         private int _called = 0;
@@ -53,20 +25,11 @@ namespace Cheeto.Core.Chams
         private const string kShaderName = "Universal Render Pipeline/Unlit";
         private const string kShaderColorPropertyName = "_BaseColor";
 
-        private ScriptableRendererData[] _rendererDataList;
-
         private Material _chamsWallMaterial = null;
         private Material _chamsMaterial = null;
 
         private RenderObjects _featureWall = null;
         private RenderObjects _featureDefault = null;
-
-        private ScriptableRendererDataWrapper _data;
-
-        private UniversalRenderPipelineAsset _asset;
-        private UniversalRenderer _universalRenderer;
-        private FieldInfo _rendererFeaturesField;
-        private List<ScriptableRendererFeature> _rendererFeatures;
 
         private bool _isActive = true;
         private Color _wallColor = Color.red;
@@ -107,13 +70,6 @@ namespace Cheeto.Core.Chams
         public ChamsURP(int layerMask)
         {
             LayerMask = layerMask;
-
-            _asset = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
-            _universalRenderer = _asset.scriptableRenderer as UniversalRenderer;
-            _rendererFeaturesField = typeof(ScriptableRenderer).GetField(
-                "m_RendererFeatures",
-                BindingFlags.NonPublic | BindingFlags.Instance
-            );
         }
 
         private void SetActive(bool active)
@@ -122,7 +78,7 @@ namespace Cheeto.Core.Chams
             _featureDefault.SetActive(active);
         }
 
-        public void Create()
+        public void Create(RuntimeRendererFeatureInstaller runtimeRendererFeatures)
         {
             var shader = Shader.Find(kShaderName);
 
@@ -141,45 +97,27 @@ namespace Cheeto.Core.Chams
             _featureWall.Create();
             _featureDefault.Create();
 
-            _rendererFeatures =
-                _rendererFeaturesField.GetValue(_universalRenderer)
-                as List<ScriptableRendererFeature>;
-            _rendererFeatures.Add(_featureWall);
-            _rendererFeatures.Add(_featureDefault);
-
-            var rendererDataField = typeof(UniversalRenderPipelineAsset).GetField(
-                "m_RendererDataList",
-                BindingFlags.NonPublic | BindingFlags.Instance
-            );
-            _rendererDataList = rendererDataField.GetValue(_asset) as ScriptableRendererData[];
-
-            //Debug.Log($"found {_rendererDataList.Length} renderers");
-
-            _data = new ScriptableRendererDataWrapper(_rendererDataList[0]);
-
-            _data.AddFeature(_featureWall);
-            _data.AddFeature(_featureDefault);
+            runtimeRendererFeatures.Add(_featureWall);
+            runtimeRendererFeatures.Add(_featureDefault);
 
             SetActive(_isActive);
-
-            Debug.Log($"features after Create: {_rendererFeatures.Count}");
         }
 
         public void Dispose()
         {
             SetActive(false);
 
-            _rendererFeatures =
-                _rendererFeaturesField.GetValue(_universalRenderer)
-                as List<ScriptableRendererFeature>;
-            _rendererFeatures.RemoveAt(_rendererFeatures.Count - 1);
-            _rendererFeatures.RemoveAt(_rendererFeatures.Count - 1);
-            _rendererFeaturesField.SetValue(_universalRenderer, _rendererFeatures);
+            //_rendererFeatures =
+            //    _rendererFeaturesField.GetValue(_universalRenderer)
+            //    as List<ScriptableRendererFeature>;
+            //_rendererFeatures.RemoveAt(_rendererFeatures.Count - 1);
+            //_rendererFeatures.RemoveAt(_rendererFeatures.Count - 1);
+            //_rendererFeaturesField.SetValue(_universalRenderer, _rendererFeatures);
 
-            Debug.Log($"features after Dispose: {_rendererFeatures.Count}");
+            //Debug.Log($"features after Dispose: {_rendererFeatures.Count}");
 
-            _data.RemoveFeature(_featureDefault);
-            _data.RemoveFeature(_featureWall);
+            //_data.RemoveFeature(_featureDefault);
+            //_data.RemoveFeature(_featureWall);
 
             DisposeFeature(_featureDefault);
             DisposeFeature(_featureWall);
